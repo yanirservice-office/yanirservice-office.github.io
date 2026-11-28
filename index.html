@@ -17,6 +17,17 @@ html,body{margin:0;height:100%;background:#1f3b6e;overflow:hidden}
 #load{position:fixed;inset:0;z-index:2;background:#1f3b6e;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font:600 20px Arial,sans-serif;gap:14px;transition:opacity .3s}
 #load img{width:96px;height:96px;border-radius:22px}
 </style>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<style>#pushBtn{position:fixed;left:12px;bottom:14px;z-index:3;display:none;background:#f2c14e;color:#1f3b6e;border:0;border-radius:24px;padding:10px 16px;font:700 15px Arial,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.3)}</style>
+<script>
+var Y={role:'',who:''};try{Y=JSON.parse(localStorage.getItem('yanir_role')||'{}')||Y}catch(e){}
+window.OneSignalDeferred=window.OneSignalDeferred||[];
+OneSignalDeferred.push(async function(OS){await OS.init({appId:"d2886d02-0b4c-4e2f-98e4-6e69a37804b0",serviceWorkerPath:"OneSignalSDKWorker.js",notifyButton:{enable:false}});window.OSX=OS;OS.Notifications.addEventListener('permissionChange',function(){tags();upd()});tags();upd()});
+function upd(){var b=document.getElementById('pushBtn');if(!b)return;var OS=window.OSX;var show=OS&&OS.Notifications.isPushSupported()&&!OS.Notifications.permission&&(Y.role==='admin'||Y.role==='driver');b.style.display=show?'block':'none'}
+function tags(){var OS=window.OSX;if(!OS||!Y.role)return;try{var t={role:Y.role};if(Y.role==='driver'&&Y.who)t.driver=Y.who;OS.User.addTags(t);if(!(Y.role==='driver'&&Y.who))OS.User.removeTag('driver')}catch(e){}}
+async function askPush(){var OS=window.OSX;if(!OS)return;try{await OS.Notifications.requestPermission();await OS.User.PushSubscription.optIn()}catch(e){}tags();upd()}
+window.addEventListener('message',function(e){try{if(!/\.googleusercontent\.com$/.test(new URL(e.origin).hostname))return}catch(x){return}var d=e.data;if(!d||d.yanir!=='role')return;Y={role:String(d.role||''),who:String(d.who||'')};try{localStorage.setItem('yanir_role',JSON.stringify(Y))}catch(x){}tags();upd()});
+</script>
 </head>
 <body>
 <div id="load"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAMAAABlApw1AAAAYFBMVEX////7+/z19/np7PHZ3ufQ1uC6wtLywU7svU/ftVHTrVOrtsmbp76ap76tm26di1uShV2HlrF8fXlecpdnamlUaZBNY4xXXmZRW2ZLWnE9VYE2S28sRHAjPm4gPG4fO249znuFAAACAElEQVR42u3aa2+CMBSA4Y5rBI00KBqu//9fDjc3mCmMJrWt5j0fTDw5DX3ktJKqGF48BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwHsBKjGLjzCKE1nWqsLktyq6Z+TXuyCI4lxW/f/1FgA/Ect2M+Ae4eMQp4Dxc5WdHmAklD4BxrvQaAKEKL0CiKjWBQS1VwARdZoAkfgFEHtdgKjsA/5EW5fJfD4bWqKrZTgNyB0DbnEOlPNZmVAzCUIPAMN59sXWbpqQVN0zd4AhV26MKxOqVAMcAirdnm6nAdIHwDD1dLwJ0PsGmHoo2LYop3V/8AIwW5TtSwJK3V3FY0D16oAzAAAAHiYUHmotgKreHSDIy14xYBGwUO8KoDqsWAMs1jsB5PvlVlAB1uqdANZCBXB5tAgAgBWA8kAGAAAAAAAM/EoJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgF9A/I2ER0J+ekLAJuGRPSNgEHNPGfMIW4DrGLi3G18ZcwiogS7/j2JlLWG2h9ni79O5kNGF1DfS78eKF4YRNwDVNszQznLAJKLJrV8z3EBMJq4DbP1UvJ7MJnoUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADeGPAJAKitJ57ca14AAAAASUVORK5CYII=" alt=""><div>טוען…</div></div>
@@ -24,6 +35,7 @@ html,body{margin:0;height:100%;background:#1f3b6e;overflow:hidden}
   src="https://script.google.com/macros/s/AKfycbxXjuEOlYXfZAbKkgZFp-twYRo1XIqMVPjBQy9TeCBLvOjSEZCuVyI9_AdfIsUv3fku/exec"
   allow="camera; microphone; geolocation; clipboard-read; clipboard-write; fullscreen"
   allowfullscreen></iframe>
+<button id="pushBtn" onclick="askPush()">🔔 הפעלת התראות</button>
 <script>
 document.getElementById('app').addEventListener('load',function(){var l=document.getElementById('load');l.style.opacity=0;setTimeout(function(){l.remove()},300)});
 </script>
